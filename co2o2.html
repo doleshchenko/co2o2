@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1, maximum-scale=1" />
+    <title>co2/o2 apnea tables</title>  
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+</head>
+    <body>
+	<p>When you are training you should only focus on one type of table per session, focusing the body’s conditioning on either co2 or o2. You must also only do one table per session. When constructing your tables ensure that you do not push your limits too far by either setting your co2 hold at over 50% of your static PB or having your last 02 hold at more than 80% of your static PB. Tables are not there to push your limits, they are there to condition yourself. Each table will take quite some time to complete so  have a  patient buddy!</p>
+	<div id="mainContainer">
+	<input id="holdTime" type="text" />
+	<input id="calculateButton" type="button" value="calculate" />
+	<div id="co2Table"></div>
+	</div> 
+	</br>
+	<div id="o2Table"></div>
+	</div> 
+
+	<script type="text/javascript">
+		(function () {		
+			var initialRelaxTime = 120;
+			var tableLength = 8;			
+			
+			$("#calculateButton").on("click", function (){
+				var holdTime = $("#holdTime").val();
+				var o2TableData = _generateO2Table(holdTime, initialRelaxTime, tableLength);
+				$("#o2Table").html(_generateTableView(o2TableData));
+				
+				var co2TableData = _generateCo2Table(holdTime, initialRelaxTime, tableLength);
+				$("#co2Table").html(_generateTableView(co2TableData));
+			});
+			
+			var _generateCo2Table = function(holdTime, relaxTime, length){
+				var result = [];
+				var hold = holdTime * .5;
+				for(var i = 0; i < length; i++){
+					var relax = relaxTime - (15*i);
+					result.push({relax: relax, hold: hold});
+				}
+				return result;
+			}
+			
+			var _generateO2Table = function(holdTime, relaxTime, length){
+				var result = [];
+				var maxHold = holdTime * .8;
+				var x = maxHold%15;
+				if (x !== 0){
+					maxHold += 15-x;
+				}
+				for(var i = 0; i < length; i++){
+					var hold = maxHold - (15 * i);
+					result.unshift({relax : relaxTime, hold: hold});
+				}
+				return result;
+			}
+			
+			var _generateTableView = function(tableData){
+				var table = "<table><tbody>"
+				for(var i = 0; i < tableData.length; i++){
+					var tableItem = tableData[i];
+					var tr = "<tr>";
+					tr += "<td>" + _formatSecondsToMinutesAndSeconds(tableItem.relax) + "</td><td>" + _formatSecondsToMinutesAndSeconds(tableItem.hold) + "</td>";
+					tr += "</tr>"
+					table += tr;
+				}
+				table += "</tbody></table>"
+				return table;
+			}
+			
+			var _formatSecondsToMinutesAndSeconds = function(seconds){
+				var minutePart = Math.floor(seconds/60);
+				var secondsPart = seconds - (minutePart * 60);
+				return _addLeftPad(minutePart, "0", 2) + ":" + _addLeftPad(secondsPart, "0", 2);
+			}
+			
+			var _addLeftPad = function(val,pad,length) {
+				return (new Array(length+1).join(pad)+val).slice(-length);
+			}
+		}());
+    </script>	
+    </body>
+</html>
